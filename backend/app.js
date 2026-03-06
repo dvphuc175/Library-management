@@ -7,6 +7,7 @@ const banSaoRoutes = require('./routes/bansaosach.routes');
 const authRoutes = require('./routes/auth.routes');
 const phieuMuonRoutes = require('./routes/phieumuon.routes');
 const giaHanRoutes = require('./routes/giahan.routes');
+const datTruocRoutes = require('./routes/dattruoc.routes');
 const app = express();
 
 
@@ -19,4 +20,5 @@ app.use('/api/bansaosach', banSaoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/phieumuon', phieuMuonRoutes);
 app.use('/api/giahan', giaHanRoutes);
+app.use('/api/dattruoc', datTruocRoutes);
 module.exports = app;
