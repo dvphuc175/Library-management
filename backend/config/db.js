@@ -4,7 +4,7 @@ const pool = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: '17052004', // Mật khẩu của bạn
-    database: 'library_db', // Tên database của bạn
+    database: 'forklibrary_db', // Tên database của bạn
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0

@@ -1,15 +1,11 @@
 -- =========================
 -- TẠO DATABASE
 -- =========================
-CREATE DATABASE IF NOT EXISTS library_db
+CREATE DATABASE IF NOT EXISTS forklibrary_db
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
-USE library_db;
-
--- =========================
--- NGƯỜI DÙNG (ĐỘC GIẢ / THỦ THƯ)
--- =========================
+USE forklibrary_db;
 CREATE TABLE NguoiDung (
     id INT AUTO_INCREMENT PRIMARY KEY,
     hoTen VARCHAR(255) NOT NULL,
@@ -18,10 +14,6 @@ CREATE TABLE NguoiDung (
     vaiTro ENUM('DOCGIA', 'THUTHU', 'ADMIN') DEFAULT 'DOCGIA',
     ngayTao DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
-
--- =========================
--- ĐẦU SÁCH
--- =========================
 CREATE TABLE DauSach (
     maDauSach VARCHAR(20) PRIMARY KEY,
     tenSach VARCHAR(255) NOT NULL,
@@ -33,10 +25,6 @@ CREATE TABLE DauSach (
     hinhAnh VARCHAR(500) DEFAULT NULL,
     tongSoLuong INT DEFAULT 0
 ) ENGINE=InnoDB;
-
--- =========================
--- BẢN SAO SÁCH
--- =========================
 CREATE TABLE BanSaoSach (
     maVach VARCHAR(50) PRIMARY KEY,
     maDauSach VARCHAR(20) NOT NULL,
@@ -47,9 +35,6 @@ CREATE TABLE BanSaoSach (
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- =========================
--- PHIẾU MƯỢN
--- =========================
 CREATE TABLE PhieuMuon (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nguoiDungId INT NOT NULL,
@@ -68,9 +53,6 @@ CREATE TABLE PhieuMuon (
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- =========================
--- GIA HẠN MƯỢN SÁCH
--- =========================
 CREATE TABLE GiaHan (
     id INT AUTO_INCREMENT PRIMARY KEY,
     phieuMuonId INT NOT NULL,
@@ -84,9 +66,7 @@ CREATE TABLE GiaHan (
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- =========================
--- ĐẶT TRƯỚC SÁCH
--- =========================
+
 CREATE TABLE DatTruoc (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nguoiDungId INT NOT NULL,
