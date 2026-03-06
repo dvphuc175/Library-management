@@ -1,25 +1,24 @@
 const PhieuMuonModel = require('../models/phieumuon.model');
 
 exports.muonSach = async (req, res) => {
-    // nguoiDungId lấy từ token (req.user), maVach do thủ thư quét mã gửi lên
-    const { maVach } = req.body; 
-    const nguoiDungId = req.user.id; 
+    // Lấy cả maVach và nguoiDungId từ body (do Thủ thư nhập vào form)
+    const { maVach, nguoiDungId } = req.body; 
 
     try {
-        if (!maVach) {
-            return res.status(400).json({ message: 'Vui lòng cung cấp mã vạch sách.' });
+        if (!maVach || !nguoiDungId) {
+            return res.status(400).json({ message: 'Vui lòng cung cấp mã vạch sách và ID độc giả.' });
         }
 
         // Thiết lập ngày mượn là hôm nay
         const ngayMuon = new Date();
         
-        // Thiết lập hạn trả là 14 ngày sau (bạn có thể tuỳ chỉnh con số này)
+        // Thiết lập hạn trả là 14 ngày sau
         const hanTra = new Date();
         hanTra.setDate(ngayMuon.getDate() + 14);
 
-        // Gọi hàm Transaction trong Model
+        // Gọi hàm Transaction trong Model (Truyền ID độc giả vào)
         const phieuId = await PhieuMuonModel.taoPhieuMuon(nguoiDungId, maVach, ngayMuon, hanTra);
-
+        
         res.status(201).json({ 
             message: 'Mượn sách thành công!',
             phieuMuonId: phieuId,

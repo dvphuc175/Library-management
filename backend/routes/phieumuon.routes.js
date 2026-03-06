@@ -3,8 +3,8 @@ const router = express.Router();
 const phieuMuonController = require('../controllers/phieumuon.controller');
 const { verifyToken, checkThuThuOrAdmin } = require('../middlewares/auth.middleware');
 
-// Chỉ user đã đăng nhập mới được mượn sách
-router.post('/muon', verifyToken, phieuMuonController.muonSach);
+// Chỉ thuthu admin đã đăng nhập mới tạo được phiếu mượn
+router.post('/muon', verifyToken, checkThuThuOrAdmin, phieuMuonController.muonSach);
 
 // Route Trả sách (Chỉ Thủ thư / Admin dùng)
 router.post('/tra', verifyToken, checkThuThuOrAdmin, phieuMuonController.traSach);

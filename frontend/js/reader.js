@@ -47,9 +47,11 @@ async function loadBooks() {
         // Tạo thẻ HTML cho từng cuốn sách
         books.forEach(book => {
             const isAvailable = book.tongSoLuong > 0;
-            const btnClass = isAvailable ? 'btn-action' : 'btn-action btn-disabled';
-            const btnText = isAvailable ? 'Mượn sách' : 'Đặt trước';
             const imageUrl = book.hinhAnh ? book.hinhAnh : 'https://via.placeholder.com/250x300?text=No+Image';
+            
+            // Nếu còn sách thì ghi "Đặt giữ chỗ", hết thì "Đặt chờ"
+            const btnText = isAvailable ? 'Đặt giữ chỗ' : 'Đặt chờ sách';
+            const btnColor = isAvailable ? '#007bff' : '#ffc107'; // Xanh blue hoặc Vàng
 
             const bookCard = `
                 <div class="book-card">
@@ -57,8 +59,9 @@ async function loadBooks() {
                     <h3>${book.tenSach}</h3>
                     <p><strong>Tác giả:</strong> ${book.tacGia || 'Đang cập nhật'}</p>
                     <p><strong>Thể loại:</strong> ${book.theLoai || 'Đang cập nhật'}</p>
-                    <p><strong>Số lượng:</strong> ${book.tongSoLuong}</p>
-                    <button class="${btnClass}" onclick="handleAction('${book.maDauSach}', ${isAvailable})">
+                    <p><strong>Số lượng trên kệ:</strong> ${book.tongSoLuong}</p>
+                    <button class="btn-action" style="background-color: ${btnColor}; color: ${isAvailable ? 'white' : 'black'};" 
+                            onclick="handleAction('${book.maDauSach}')">
                         ${btnText}
                     </button>
                 </div>
@@ -73,10 +76,34 @@ async function loadBooks() {
 }
 
 // 4. Xử lý nút Mượn / Đặt trước (Sẽ code logic gọi API sau)
-function handleAction(maDauSach, isAvailable) {
-    if (isAvailable) {
-        alert(`Sách có mã ${maDauSach} đang có sẵn. Chức năng gọi API mượn sẽ được tích hợp ở bước tiếp theo!`);
-    } else {
-        alert(`Sách có mã ${maDauSach} đã hết. Chức năng gọi API đặt trước sẽ được tích hợp ở bước tiếp theo!`);
+// 4. Xử lý nút Đặt trước
+async function handleAction(maDauSach) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    try {
+        const datTruocRes = await fetch('http://localhost:3000/api/dattruoc', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ maDauSach: maDauSach })
+        });
+
+        const datTruocData = await datTruocRes.json();
+        
+        if (datTruocRes.ok) {
+            alert('Đặt trước thành công! Vui lòng đến quầy thủ thư để nhận sách hoặc chờ thông báo nếu sách đang hết.');
+        } else {
+            alert('Lỗi: ' + datTruocData.message);
+        }
+    } catch (error) {
+        console.error('Lỗi khi đặt trước:', error);
+        alert('Có lỗi xảy ra khi kết nối đến server.');
     }
 }
