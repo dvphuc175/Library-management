@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 require('dotenv').config();
+const cors = require('cors');
 // Import Routes
 const dauSachRoutes = require('./routes/dausach.routes');
 const banSaoRoutes = require('./routes/bansaosach.routes');
@@ -10,6 +11,7 @@ const giaHanRoutes = require('./routes/giahan.routes');
 const datTruocRoutes = require('./routes/dattruoc.routes');
 const app = express();
 
+app.use(cors());
 
 // Middleware
 app.use(bodyParser.json());
@@ -21,4 +23,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/phieumuon', phieuMuonRoutes);
 app.use('/api/giahan', giaHanRoutes);
 app.use('/api/dattruoc', datTruocRoutes);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 Server đã mở cửa và đang lắng nghe tại http://localhost:${PORT}`);
+});
+
 module.exports = app;
