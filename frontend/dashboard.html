@@ -3,64 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký Tài Khoản</title>
+    <title>Quản Trị Thư Viện</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f4f6f9; }
+        
+        /* Cột menu bên trái */
+        .sidebar { width: 250px; background-color: #343a40; color: white; display: flex; flex-direction: column; }
+        .sidebar h2 { text-align: center; padding: 20px 0; margin: 0; border-bottom: 1px solid #4f5962; }
+        .sidebar a { color: #c2c7d0; text-decoration: none; padding: 15px 20px; display: block; border-bottom: 1px solid #4f5962; cursor: pointer; }
+        .sidebar a:hover, .sidebar a.active { background-color: #007bff; color: white; }
+        .sidebar .logout-btn { margin-top: auto; background-color: #dc3545; text-align: center; cursor: pointer; }
+        .sidebar .logout-btn:hover { background-color: #c82333; }
+
+        /* Nội dung chính bên phải */
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .header-top { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        
+        /* Các section nội dung (Dùng để ẩn hiện tab) */
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+
+        /* Card form */
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn-submit { background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-submit:hover { background-color: #218838; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        /* Style cho Table Quản lý sách */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 12px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .btn-small { padding: 5px 10px; font-size: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-small:hover { background-color: #138496; }
+    </style>
 </head>
 <body>
 
-    <div class="register-container">
-        <h2>Đăng Ký Thành Viên</h2>
-        
-        <form id="registerForm">
-            
-            <div class="form-group">
-                <label for="hoTen">Họ và Tên</label>
-                <input type="text" id="hoTen" placeholder="Nguyễn Văn A" required>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="example@gmail.com" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="matKhau">Mật khẩu</label>
-                <input type="password" id="matKhau" placeholder="Nhập mật khẩu..." required>
-            </div>
-
-            <button type="submit">Đăng Ký Ngay</button>
-        </form>
-
-        <div class="login-link">
-            Đã có tài khoản? <a href="login.html">Đăng nhập tại đây</a>
-        </div>
+    <div class="sidebar">
+        <h2>THƯ VIỆN ADMIN</h2>
+        <a class="nav-link active" data-target="section-muontra">Quản lý Mượn / Trả</a>
+        <a class="nav-link" data-target="section-sach">Quản lý Đầu sách & Bản sao</a>
+        <a class="nav-link" data-target="section-dattruoc">Yêu cầu Đặt trước (Sắp ra mắt)</a>
+        <a class="logout-btn" id="btnLogout">Đăng Xuất</a>
     </div>
 
-    <script>
-        document.getElementById("registerForm").addEventListener("submit", async e => {
-            e.preventDefault();
-            const data = {
-                hoTen: document.getElementById('hoTen').value,  
-                email: document.getElementById('email').value,
-                matKhau: document.getElementById('matKhau').value
-            };
-            try {
-                const res = await fetch("http://localhost:3000/api/register", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data),
-                    credentials: "include"
-                });
-                const result = await res.json();
-                alert(result.message);
-                if (res.ok) {
-                    window.location.href = "login.html";
-                }
-            } catch (error) {
-                console.error("Lỗi:", error);
-                alert("Không thể kết nối đến server!");
-            }
-        });
-    </script>
+    <div class="main-content">
+        <div class="header-top">
+            <h1 id="pageTitle" style="margin: 0;">Quản lý Mượn / Trả Sách</h1>
+            <span id="adminNameDisplay" style="font-weight: bold; font-size: 18px; color: #333;">Xin chào, Thủ thư</span>
+        </div>
 
+        <div id="section-muontra" class="content-section active">
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Thủ tục Cho Mượn</h3>
+                    <div class="form-group">
+                        <label>Mã vạch trên sách:</label>
+                        <input type="text" id="muon_maVach" placeholder="VD: MV_IT001_01">
+                    </div>
+                    <div class="form-group">
+                        <label>ID Độc giả (Thẻ thư viện):</label>
+                        <input type="number" id="muon_nguoiDungId" placeholder="VD: 2">
+                    </div>
+                    <button class="btn-submit" onclick="xuLyMuonSach()">Tạo Phiếu Mượn</button>
+                </div>
+
+                <div class="card">
+                    <h3>Thủ tục Nhận Trả</h3>
+                    <div class="form-group">
+                        <label>Mã vạch trên sách:</label>
+                        <input type="text" id="tra_maVach" placeholder="VD: MV_IT001_01">
+                    </div>
+                    <button class="btn-submit" style="background-color: #17a2b8;" onclick="xuLyTraSach()">Ghi nhận Trả Sách</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-sach" class="content-section">
+            <div class="card">
+                <h3>Thêm Đầu Sách Mới</h3>
+                <form id="formThemSach" class="grid-2">
+                    <div class="form-group"><label>Mã Đầu Sách:</label><input type="text" id="maDauSach" required></div>
+                    <div class="form-group"><label>Tên Sách:</label><input type="text" id="tenSach" required></div>
+                    <div class="form-group"><label>Tác Giả:</label><input type="text" id="tacGia"></div>
+                    <div class="form-group"><label>Thể Loại:</label><input type="text" id="theLoai"></div>
+                    <div style="grid-column: span 2;">
+                        <button type="submit" class="btn-submit">Thêm Đầu Sách</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Danh sách Đầu sách trong Kho</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã Đầu Sách</th>
+                            <th>Tên Sách</th>
+                            <th>Tác Giả</th>
+                            <th>Số lượng có sẵn</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bangDanhSachSach">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="section-dattruoc" class="content-section">
+            <div class="card"><h3>Tính năng đang phát triển...</h3></div>
+        </div>
+
+    </div>
+
+    <script src="js/dashboard.js"></script>
 </body>
 </html>
