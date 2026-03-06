@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
+require('dotenv').config();
 // Import Routes
 const dauSachRoutes = require('./routes/dausach.routes');
 const banSaoRoutes = require('./routes/bansaosach.routes');
