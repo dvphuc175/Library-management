@@ -36,3 +36,27 @@ exports.muonSach = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server khi thực hiện mượn sách.' });
     }
 };
+
+exports.traSach = async (req, res) => {
+    const { maVach } = req.body;
+
+    try {
+        if (!maVach) {
+            return res.status(400).json({ message: 'Vui lòng cung cấp mã vạch sách cần trả.' });
+        }
+
+        const phieuId = await PhieuMuonModel.traSach(maVach);
+
+        res.status(200).json({ 
+            message: 'Trả sách thành công!',
+            phieuMuonId: phieuId
+        });
+
+    } catch (error) {
+        if (error.message.includes('Không tìm thấy phiếu mượn')) {
+            return res.status(400).json({ message: error.message });
+        }
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi server khi thực hiện trả sách.' });
+    }
+};

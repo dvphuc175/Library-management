@@ -59,6 +59,63 @@ class PhieuMuonModel {
             connection.release();
         }
     }
+    
+    // Hàm xử lý Trả Sách (Dùng Transaction)
+    static async traSach(maVach) {
+        const connection = await db.getConnection();
+        
+        try {
+            await connection.beginTransaction();
+
+            // 1. Tìm phiếu mượn đang 'DANG_MUON' của mã vạch này
+            const [phieu] = await connection.query(
+                `SELECT id, hanTra FROM PhieuMuon WHERE maVach = ? AND trangThai = 'DANG_MUON' FOR UPDATE`, 
+                [maVach]
+            );
+
+            if (phieu.length === 0) {
+                throw new Error('Không tìm thấy phiếu mượn nào đang active cho mã vạch này!');
+            }
+
+            const phieuId = phieu[0].id;
+
+            // 2. Lấy mã đầu sách để lát nữa cộng số lượng
+            const [banSao] = await connection.query(
+                `SELECT maDauSach FROM BanSaoSach WHERE maVach = ?`, 
+                [maVach]
+            );
+            const maDauSach = banSao[0].maDauSach;
+
+            // 3. Cập nhật phiếu mượn thành DA_TRA và ghi nhận ngày trả
+            await connection.query(
+                `UPDATE PhieuMuon SET ngayTra = CURDATE(), trangThai = 'DA_TRA' WHERE id = ?`, 
+                [phieuId]
+            );
+
+            // 4. Cập nhật bản sao sách thành CO_SAN
+            await connection.query(
+                `UPDATE BanSaoSach SET trangThai = 'CO_SAN' WHERE maVach = ?`, 
+                [maVach]
+            );
+
+            // 5. Cập nhật tăng số lượng đầu sách (+1)
+            await connection.query(
+                `UPDATE DauSach SET tongSoLuong = tongSoLuong + 1 WHERE maDauSach = ?`, 
+                [maDauSach]
+            );
+
+            await connection.commit();
+            return phieuId;
+
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
 }
+
+
 
 module.exports = PhieuMuonModel;
