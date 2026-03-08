@@ -25,33 +25,37 @@ class DatTruocModel {
 
 
 // 2. DÀNH CHO THỦ THƯ: Cập nhật trạng thái (Bắt buộc check kho nếu báo DA_CO_SACH)
+    // Cập nhật trạng thái kèm mã vạch (để giữ chỗ)
+    // DÀNH CHO THỦ THƯ: Cập nhật trạng thái (Hệ thống TỰ ĐỘNG lấy 1 cuốn để giữ chỗ)
     static async capNhatTrangThai(datTruocId, trangThaiMoi) {
-        // Lấy thông tin phiếu đặt trước để biết Độc giả đang đặt cuốn (maDauSach) nào
         const [thongTinDat] = await db.query('SELECT maDauSach FROM DatTruoc WHERE id = ?', [datTruocId]);
-        if (thongTinDat.length === 0) {
-            throw new Error('Không tìm thấy phiếu đặt trước này.');
-        }
+        if (thongTinDat.length === 0) throw new Error('Không tìm thấy phiếu đặt trước này.');
         
         const maDauSach = thongTinDat[0].maDauSach;
+        let maVachDuocChon = null;
 
-        // BẢO VỆ LOGIC: Nếu thủ thư muốn chuyển thành DA_CO_SACH, phải đếm xem có Bản sao nào rảnh không
         if (trangThaiMoi === 'DA_CO_SACH') {
+            // TỰ ĐỘNG: Tìm 1 bản sao đang CÓ SẴN của đầu sách này
             const [banSaoRanh] = await db.query(
-                'SELECT COUNT(*) as soLuong FROM BanSaoSach WHERE maDauSach = ? AND trangThai = "CO_SAN"', 
+                'SELECT maVach FROM BanSaoSach WHERE maDauSach = ? AND trangThai = "CO_SAN" LIMIT 1', 
                 [maDauSach]
             );
             
-            if (banSaoRanh[0].soLuong === 0) {
-                // Quăng lỗi ra thẳng mặt nếu kho không có cuốn nào
+            if (banSaoRanh.length === 0) {
                 throw new Error('Không thể Báo có sách! Hiện tại không có bản sao nào đang rảnh trong kho.');
             }
+
+            maVachDuocChon = banSaoRanh[0].maVach;
+
+            // KHÓA SÁCH: Chuyển trạng thái bản sao thành DANG_GIU_CHO
+            await db.query('UPDATE BanSaoSach SET trangThai = "DANG_GIU_CHO" WHERE maVach = ?', [maVachDuocChon]);
         }
 
-        // Nếu qua được ải trên (hoặc là bấm HỦY) thì cho phép cập nhật
         const sql = 'UPDATE DatTruoc SET trangThai = ? WHERE id = ?';
         await db.query(sql, [trangThaiMoi, datTruocId]);
         
-        return true;
+        // Trả về cái mã vạch vừa được máy chọn để báo lại cho Thủ thư
+        return maVachDuocChon; 
     }
     // DÀNH CHO THỦ THƯ: Lấy danh sách tất cả yêu cầu đặt trước (Kèm số lượng sách rảnh)
     static async getAll() {

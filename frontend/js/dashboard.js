@@ -55,6 +55,7 @@ async function xuLyMuonSach() {
             // Xóa form cho sạch
             document.getElementById('muon_maVach').value = '';
             document.getElementById('muon_nguoiDungId').value = '';
+            loadDanhSachPhieuMuon();
         } else {
             alert('Lỗi: ' + data.message);
         }
@@ -91,6 +92,7 @@ async function xuLyTraSach() {
         if (response.ok) {
             alert('Nhận trả sách thành công! Sách đã được cập nhật trạng thái CÓ SẴN vào kho.');
             document.getElementById('tra_maVach').value = '';
+            loadDanhSachPhieuMuon();
         } else {
             alert('Lỗi: ' + data.message);
         }
@@ -449,7 +451,12 @@ async function loadDanhSachDatTruoc() {
 }
 
 async function capNhatDatTruoc(id, trangThaiMoi) {
-    if (!confirm(`Xác nhận đổi trạng thái mã #${id} thành ${trangThaiMoi}?`)) return;
+    // Chỉ hỏi xác nhận nhẹ nhàng, không bắt nhập tay nữa
+    if (trangThaiMoi === 'HUY') {
+        if (!confirm(`Xác nhận HỦY yêu cầu đặt trước mã #${id}?`)) return;
+    } else if (trangThaiMoi === 'DA_CO_SACH') {
+        if (!confirm(`Xác nhận BÁO CÓ SÁCH cho yêu cầu #${id}?\nHệ thống sẽ tự động khóa 1 cuốn rảnh trong kho.`)) return;
+    }
 
     const token = localStorage.getItem('token');
     try {
@@ -459,17 +466,60 @@ async function capNhatDatTruoc(id, trangThaiMoi) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ trangThai: trangThaiMoi })
+            body: JSON.stringify({ trangThai: trangThaiMoi }) // Không cần gửi maVach lên nữa
         });
 
+        const data = await response.json();
+
         if (response.ok) {
-            alert('Cập nhật trạng thái thành công!');
-            loadDanhSachDatTruoc(); // Load lại bảng
+            if (trangThaiMoi === 'DA_CO_SACH') {
+                // Đọc mã vạch mà Backend tự gán và báo cho Thủ thư đi tìm
+                alert(`THÀNH CÔNG!\nHệ thống đã tự động khóa cuốn sách có mã vạch: [ ${data.maVach} ].\n👉 Thủ thư vui lòng tìm cuốn này cất ra "Kệ Giữ Chỗ" cho độc giả nhé!`);
+            } else {
+                alert('Đã hủy yêu cầu đặt trước.');
+            }
+            loadDanhSachDatTruoc(); // Tải lại bảng Đặt trước
         } else {
-            const err = await response.json();
-            alert('Lỗi: ' + err.message);
+            alert('Lỗi: ' + data.message);
         }
     } catch (error) {
         alert('Lỗi kết nối máy chủ!');
     }
 }
+
+async function loadDanhSachPhieuMuon() {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch('http://localhost:3000/api/phieumuon', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        const tbody = document.getElementById('bangTatCaPhieuMuon');
+        tbody.innerHTML = '';
+
+        data.forEach(item => {
+            const ngayMuon = new Date(item.ngayMuon).toLocaleDateString('vi-VN');
+            const hanTra = new Date(item.hanTra).toLocaleDateString('vi-VN');
+            
+            let badgeClass = 'bg-muon';
+            if (item.trangThai === 'DA_TRA') badgeClass = 'bg-tra';
+            if (item.trangThai === 'QUA_HAN') badgeClass = 'bg-huhong';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>#${item.id}</td>
+                <td><strong>${item.hoTen}</strong></td>
+                <td>${item.tenSach} <br><small style="color:gray;">(${item.maVach})</small></td>
+                <td>${ngayMuon}</td>
+                <td style="color: ${item.trangThai === 'QUA_HAN' ? 'red' : 'black'};">${hanTra}</td>
+                <td><span class="badge ${badgeClass}">${item.trangThai}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Lỗi load danh sách phiếu mượn:', error);
+    }
+}
+
+// Gọi hàm này ngay khi vào dashboard hoặc chuyển sang tab Mượn/Trả
+loadDanhSachPhieuMuon();

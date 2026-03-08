@@ -9,28 +9,26 @@ exports.muonSach = async (req, res) => {
             return res.status(400).json({ message: 'Vui lòng cung cấp mã vạch sách và ID độc giả.' });
         }
 
-        // Thiết lập ngày mượn là hôm nay
-        const ngayMuon = new Date();
-        
-        // Thiết lập hạn trả là 14 ngày sau
-        const hanTra = new Date();
-        hanTra.setDate(ngayMuon.getDate() + 14);
-
-        // Gọi hàm Transaction trong Model (Truyền ID độc giả vào)
-        const phieuId = await PhieuMuonModel.taoPhieuMuon(nguoiDungId, maVach, ngayMuon, hanTra);
+        // Gọi hàm Transaction trong Model (Chỉ cần truyền 2 biến, Model sẽ tự tính Ngày mượn/Hạn trả)
+        // Lưu ý: Phải truyền đúng thứ tự (maVach, nguoiDungId)
+        const ketQua = await PhieuMuonModel.taoPhieuMuon(maVach, nguoiDungId);
         
         res.status(201).json({ 
             message: 'Mượn sách thành công!',
-            phieuMuonId: phieuId,
-            ngayMuon: ngayMuon.toISOString().split('T')[0],
-            hanTra: hanTra.toISOString().split('T')[0]
+            phieuMuonId: ketQua.phieuMuonId,
+            hanTra: ketQua.hanTra
         });
 
     } catch (error) {
-        // Lỗi do chúng ta throw trong Model (ví dụ: "Sách này hiện không có sẵn")
-        if (error.message.includes('Sách này hiện không có sẵn') || error.message.includes('Không tìm thấy')) {
+        // Cập nhật câu lệnh bắt lỗi để hứng trọn vẹn "Bức tường lửa" từ Model
+        if (
+            error.message.includes('Từ chối cho mượn') || 
+            error.message.includes('tồn tại') || 
+            error.message.includes('không có sẵn')
+        ) {
             return res.status(400).json({ message: error.message });
         }
+        
         console.error(error);
         res.status(500).json({ message: 'Lỗi server khi thực hiện mượn sách.' });
     }
@@ -68,5 +66,14 @@ exports.layLichSuCaNhan = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Lỗi server khi lấy lịch sử mượn.' });
+    }
+};
+
+exports.getAllPhieuMuon = async (req, res) => {
+    try {
+        const danhSach = await PhieuMuonModel.getAll();
+        res.status(200).json(danhSach);
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server khi lấy danh sách phiếu mượn.' });
     }
 };

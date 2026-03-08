@@ -29,18 +29,19 @@ exports.capNhatDatTruoc = async (req, res) => {
 
     try {
         if (!['DA_CO_SACH', 'HUY'].includes(trangThai)) {
-            return res.status(400).json({ message: 'Trạng thái không hợp lệ (Chỉ nhận DA_CO_SACH hoặc HUY).' });
+            return res.status(400).json({ message: 'Trạng thái không hợp lệ.' });
         }
 
-        await DatTruocModel.capNhatTrangThai(datTruocId, trangThai);
-        res.status(200).json({ message: 'Cập nhật trạng thái đặt trước thành công.' });
-    } catch (error) {
-        if (error.message.includes('Không thể Báo có sách')) {
-            return res.status(400).json({ message: error.message });
-        }
+        // Nhận mã vạch được hệ thống tự động chọn
+        const maVach = await DatTruocModel.capNhatTrangThai(datTruocId, trangThai);
         
-        if (error.message.includes('Không tìm thấy')) {
-            return res.status(404).json({ message: error.message });
+        res.status(200).json({ 
+            message: 'Cập nhật trạng thái thành công.',
+            maVach: maVach // Gửi kèm mã vạch này về cho Frontend
+        });
+    } catch (error) {
+        if (error.message.includes('Không thể Báo có sách') || error.message.includes('Không tìm thấy')) {
+            return res.status(400).json({ message: error.message });
         }
         console.error(error);
         res.status(500).json({ message: 'Lỗi server khi cập nhật đặt trước.' });

@@ -28,7 +28,7 @@ CREATE TABLE DauSach (
 CREATE TABLE BanSaoSach (
     maVach VARCHAR(50) PRIMARY KEY,
     maDauSach VARCHAR(20) NOT NULL,
-    trangThai ENUM('CO_SAN', 'DANG_MUON', 'HU_HONG', 'MAT') DEFAULT 'CO_SAN',
+    trangThai ENUM('CO_SAN', 'DANG_MUON', 'HU_HONG', 'MAT', 'DANG_GIU_CHO') DEFAULT 'CO_SAN',
 
     FOREIGN KEY (maDauSach)
         REFERENCES DauSach(maDauSach)
@@ -72,7 +72,7 @@ CREATE TABLE DatTruoc (
     nguoiDungId INT NOT NULL,
     maDauSach VARCHAR(20) NOT NULL,
     ngayDat DATETIME DEFAULT CURRENT_TIMESTAMP,
-    trangThai ENUM('CHO', 'DA_CO_SACH', 'HUY') DEFAULT 'CHO',
+    trangThai ENUM('CHO', 'DA_CO_SACH', 'HUY', 'HOAN_THANH') DEFAULT 'CHO',
 
     FOREIGN KEY (nguoiDungId)
         REFERENCES NguoiDung(id)
