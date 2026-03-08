@@ -40,6 +40,16 @@
         th { background-color: #007bff; color: white; }
         .btn-small { padding: 5px 10px; font-size: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 3px; cursor: pointer; }
         .btn-small:hover { background-color: #138496; }
+
+        /* --- CSS CHO CỬA SỔ QUẢN LÝ BẢN SAO (MODAL) --- */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 20px; width: 60%; max-height: 80vh; overflow-y: auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: relative; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; font-weight: bold; cursor: pointer; color: #666; }
+        .close-btn:hover { color: red; }
+        .badge { padding: 5px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; }
+        .bg-cosan { background-color: #28a745; }
+        .bg-dangmuon { background-color: #ffc107; color: black; }
+        .bg-huhong { background-color: #dc3545; }
     </style>
 </head>
 <body>
@@ -87,11 +97,24 @@
         <div id="section-sach" class="content-section">
             <div class="card">
                 <h3>Thêm Đầu Sách Mới</h3>
-                <form id="formThemSach" class="grid-2">
+                    <form id="formThemSach" class="grid-2">
                     <div class="form-group"><label>Mã Đầu Sách:</label><input type="text" id="maDauSach" required></div>
                     <div class="form-group"><label>Tên Sách:</label><input type="text" id="tenSach" required></div>
                     <div class="form-group"><label>Tác Giả:</label><input type="text" id="tacGia"></div>
                     <div class="form-group"><label>Thể Loại:</label><input type="text" id="theLoai"></div>
+                    <div class="form-group"><label>Nhà Xuất Bản:</label><input type="text" id="nhaXuatBan"></div>
+                    <div class="form-group"><label>Năm Xuất Bản:</label><input type="number" id="namXuatBan"></div>
+                    
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Link Hình Ảnh (URL):</label>
+                        <input type="text" id="hinhAnh" placeholder="Nhập link ảnh bìa sách (nếu có)...">
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Mô tả sách:</label>
+                        <textarea id="moTa" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;" placeholder="Nhập tóm tắt nội dung sách..."></textarea>
+                    </div>
+
                     <div style="grid-column: span 2;">
                         <button type="submit" class="btn-submit">Thêm Đầu Sách</button>
                     </div>
@@ -121,7 +144,29 @@
         </div>
 
     </div>
+    <div id="modalBanSao" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="dongModal()">&times;</span>
+            <h2 id="modalTitle">Chi tiết bản sao</h2>
+            
+            <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                <input type="text" id="inputMaVachMoi" placeholder="Nhập mã vạch mới..." style="padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 4px;">
+                <button class="btn-submit" onclick="themBanSaoTuModal()">+ Nhập Bản Sao Mới</button>
+            </div>
 
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã Vạch</th>
+                        <th>Trạng Thái</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="bangChiTietBanSao">
+                    </tbody>
+            </table>
+        </div>
+    </div>
     <script src="js/dashboard.js"></script>
 </body>
 </html>

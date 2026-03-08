@@ -145,8 +145,8 @@ async function loadDanhSachSachAdmin() {
                 <td>${book.tacGia || ''}</td>
                 <td><strong style="color: ${book.tongSoLuong > 0 ? 'green' : 'red'};">${book.tongSoLuong}</strong> cuốn</td>
                 <td>
-                    <button class="btn-small" onclick="themBanSaoVatLy('${book.maDauSach}', '${book.tenSach}')">
-                        + Nhập Bản Sao (Mã Vạch)
+                    <button class="btn-small" style="background-color: #6c757d;" onclick="moModal('${book.maDauSach}', '${book.tenSach.replace(/'/g, "\\'")}')">
+                        Quản lý Bản sao
                     </button>
                 </td>
             `;
@@ -168,7 +168,11 @@ document.getElementById('formThemSach').addEventListener('submit', async functio
         maDauSach: document.getElementById('maDauSach').value,
         tenSach: document.getElementById('tenSach').value,
         tacGia: document.getElementById('tacGia').value,
-        theLoai: document.getElementById('theLoai').value
+        theLoai: document.getElementById('theLoai').value,
+        nhaXuatBan: document.getElementById('nhaXuatBan').value,  
+        namXuatBan: document.getElementById('namXuatBan').value,  
+        moTa: document.getElementById('moTa').value,               
+        hinhAnh: document.getElementById('hinhAnh').value
     };
 
     try {
@@ -224,6 +228,152 @@ async function themBanSaoVatLy(maDauSach, tenSach) {
         }
     } catch (error) {
         console.error('Lỗi khi thêm bản sao:', error);
+        alert('Lỗi kết nối máy chủ!');
+    }
+}
+
+// ==========================================
+// QUẢN LÝ BẢN SAO BẰNG MODAL
+// ==========================================
+let dauSachDangChon = ''; // Biến toàn cục lưu mã sách đang mở
+
+async function moModal(maDauSach, tenSach) {
+    dauSachDangChon = maDauSach;
+    document.getElementById('modalTitle').innerText = `Quản lý Bản Sao: ${tenSach}`;
+    document.getElementById('modalBanSao').style.display = 'flex';
+    
+    await loadChiTietBanSao(maDauSach);
+}
+
+function dongModal() {
+    document.getElementById('modalBanSao').style.display = 'none';
+    dauSachDangChon = '';
+    document.getElementById('inputMaVachMoi').value = '';
+    loadDanhSachSachAdmin(); // Load lại bảng chính để cập nhật tổng số lượng
+}
+
+async function loadChiTietBanSao(maDauSach) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/dausach/${maDauSach}`);
+        const data = await response.json();
+        const tbody = document.getElementById('bangChiTietBanSao');
+        tbody.innerHTML = '';
+
+        if (!data.danhSachBanSao || data.danhSachBanSao.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Chưa có bản sao nào trong kho.</td></tr>';
+            return;
+        }
+
+        data.danhSachBanSao.forEach(bs => {
+            let badgeClass = 'bg-cosan';
+            if (bs.trangThai === 'DANG_MUON') badgeClass = 'bg-dangmuon';
+            if (bs.trangThai === 'HU_HONG' || bs.trangThai === 'MAT') badgeClass = 'bg-huhong';
+
+            // Xử lý Cột Hành Động theo logic của bạn
+            let hanhDongHtml = '';
+            
+            if (bs.trangThai === 'DANG_MUON') {
+                // Nếu đang mượn -> Khóa, không cho sửa hay xóa
+                hanhDongHtml = `<span style="color: #888; font-size: 13px;">Đang cho mượn (Khóa)</span>`;
+            } else {
+                // Nếu có sẵn, hư hỏng, hoặc mất -> Cho phép chọn trạng thái mới và lưu
+                hanhDongHtml = `
+                    <select id="status_${bs.maVach}" style="padding: 4px; border-radius: 3px;">
+                        <option value="CO_SAN" ${bs.trangThai === 'CO_SAN' ? 'selected' : ''}>CÓ SẴN</option>
+                        <option value="HU_HONG" ${bs.trangThai === 'HU_HONG' ? 'selected' : ''}>HƯ HỎNG</option>
+                        <option value="MAT" ${bs.trangThai === 'MAT' ? 'selected' : ''}>MẤT</option>
+                    </select>
+                    <button class="btn-small" style="background-color: #ffc107; color: black;" onclick="suaTrangThaiBanSao('${bs.maVach}')">Lưu</button>
+                    <button class="btn-small" style="background-color: #dc3545;" onclick="xoaBanSao('${bs.maVach}')">Xóa</button>
+                `;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${bs.maVach}</strong></td>
+                <td><span class="badge ${badgeClass}">${bs.trangThai}</span></td>
+                <td>${hanhDongHtml}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Lỗi tải bản sao:', error);
+    }
+}
+
+async function suaTrangThaiBanSao(maVach) {
+    // Lấy trạng thái mới từ ô select tương ứng
+    const trangThaiMoi = document.getElementById(`status_${maVach}`).value;
+    const token = localStorage.getItem('token');
+
+    try {
+        // Gọi API cập nhật trạng thái bản sao (Bạn kiểm tra lại URL bên Backend xem có khớp không nhé, thường là PUT /api/bansaosach/:id)
+        const response = await fetch(`http://localhost:3000/api/bansaosach/${maVach}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ trangThai: trangThaiMoi })
+        });
+
+        if (response.ok) {
+            alert(`Đã cập nhật trạng thái bản sao ${maVach} thành ${trangThaiMoi}!`);
+            loadChiTietBanSao(dauSachDangChon); // Load lại bảng con để thấy màu badge thay đổi
+        } else {
+            const err = await response.json();
+            alert('Lỗi: ' + (err.message || err.error));
+        }
+    } catch (error) {
+        console.error('Lỗi cập nhật trạng thái:', error);
+        alert('Lỗi kết nối máy chủ!');
+    }
+}
+
+async function themBanSaoTuModal() {
+    const maVachMoi = document.getElementById('inputMaVachMoi').value.trim();
+    if (!maVachMoi) {
+        alert('Vui lòng nhập mã vạch!');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch('http://localhost:3000/api/bansaosach', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ maVach: maVachMoi, maDauSach: dauSachDangChon })
+        });
+
+        if (response.ok) {
+            document.getElementById('inputMaVachMoi').value = ''; // Xóa ô nhập
+            loadChiTietBanSao(dauSachDangChon); // Tải lại bảng con
+        } else {
+            const err = await response.json();
+            alert('Lỗi: ' + (err.message || err.error));
+        }
+    } catch (error) {
+        alert('Lỗi kết nối máy chủ!');
+    }
+}
+
+async function xoaBanSao(maVach) {
+    if (!confirm(`Bạn có chắc muốn XÓA bản sao mã ${maVach} khỏi hệ thống không?`)) return;
+
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`http://localhost:3000/api/bansaosach/${maVach}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            loadChiTietBanSao(dauSachDangChon); // Tải lại bảng con
+        } else {
+            const err = await response.json();
+            alert('Lỗi: ' + (err.message || err.error));
+        }
+    } catch (error) {
         alert('Lỗi kết nối máy chủ!');
     }
 }
