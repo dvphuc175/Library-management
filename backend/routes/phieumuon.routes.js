@@ -9,3 +9,6 @@ router.post('/muon', verifyToken, checkThuThuOrAdmin, phieuMuonController.muonSa
 // Route Trả sách (Chỉ Thủ thư / Admin dùng)
 router.post('/tra', verifyToken, checkThuThuOrAdmin, phieuMuonController.traSach);
 module.exports = router;
+
+// Độc giả tự xem lịch sử mượn của mình
+router.get('/lichsu', verifyToken, phieuMuonController.layLichSuCaNhan);

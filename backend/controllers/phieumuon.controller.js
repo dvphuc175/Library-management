@@ -59,3 +59,14 @@ exports.traSach = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server khi thực hiện trả sách.' });
     }
 };
+
+exports.layLichSuCaNhan = async (req, res) => {
+    try {
+        const nguoiDungId = req.user.id; // Lấy từ Token
+        const lichSu = await PhieuMuonModel.getLichSuCaNhan(nguoiDungId);
+        res.status(200).json(lichSu);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi server khi lấy lịch sử mượn.' });
+    }
+};

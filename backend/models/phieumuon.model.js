@@ -114,6 +114,19 @@ class PhieuMuonModel {
             connection.release();
         }
     }
+    // Lấy lịch sử mượn sách của 1 cá nhân (Kèm theo tên sách từ bảng DauSach)
+    static async getLichSuCaNhan(nguoiDungId) {
+        const sql = `
+            SELECT pm.id, pm.maVach, ds.tenSach, pm.ngayMuon, pm.hanTra, pm.ngayTra, pm.trangThai
+            FROM PhieuMuon pm
+            JOIN BanSaoSach bs ON pm.maVach = bs.maVach
+            JOIN DauSach ds ON bs.maDauSach = ds.maDauSach
+            WHERE pm.nguoiDungId = ?
+            ORDER BY pm.ngayMuon DESC
+        `;
+        const [rows] = await db.query(sql, [nguoiDungId]);
+        return rows;
+    }
 }
 
 

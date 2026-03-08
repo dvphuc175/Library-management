@@ -53,7 +53,6 @@ class DatTruocModel {
         
         return true;
     }
-    // DÀNH CHO THỦ THƯ: Lấy danh sách tất cả yêu cầu đặt trước
     // DÀNH CHO THỦ THƯ: Lấy danh sách tất cả yêu cầu đặt trước (Kèm số lượng sách rảnh)
     static async getAll() {
         const sql = `
@@ -65,6 +64,19 @@ class DatTruocModel {
             ORDER BY dt.ngayDat DESC
         `;
         const [rows] = await db.query(sql);
+        return rows;
+    }
+
+    // Lấy lịch sử đặt trước của cá nhân
+    static async getLichSuCaNhan(nguoiDungId) {
+        const sql = `
+            SELECT dt.id, dt.ngayDat, dt.trangThai, ds.tenSach
+            FROM DatTruoc dt
+            JOIN DauSach ds ON dt.maDauSach = ds.maDauSach
+            WHERE dt.nguoiDungId = ?
+            ORDER BY dt.ngayDat DESC
+        `;
+        const [rows] = await db.query(sql, [nguoiDungId]);
         return rows;
     }
 }

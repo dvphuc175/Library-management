@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Cá Nhân - Thư Viện</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f9; }
+        header { background-color: #007bff; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 24px; cursor: pointer; }
+        .container { padding: 20px; max-width: 1000px; margin: auto; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+        
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .card h2 { margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 12px; text-align: left; }
+        th { background-color: #f8f9fa; color: #333; }
+        
+        .badge { padding: 5px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; }
+        .bg-muon { background-color: #17a2b8; }
+        .bg-tra { background-color: #28a745; }
+        .bg-tre { background-color: #dc3545; }
+        .bg-cho { background-color: #ffc107; color: black; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 onclick="window.location.href='index.html'">Thư Viện Của Bạn</h1>
+    </header>
+
+    <div class="container">
+        <a href="index.html" class="back-link">← Quay lại trang chủ</a>
+        
+        <div class="card">
+            <h2>📚 Sách Đang Đặt Trước</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên Sách</th>
+                        <th>Ngày Đặt</th>
+                        <th>Trạng Thái</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody id="bangDatTruoc">
+                    <tr><td colspan="4" style="text-align: center;">Đang tải dữ liệu...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📖 Lịch Sử Mượn Trả</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên Sách</th>
+                        <th>Mã Vạch</th>
+                        <th>Ngày Mượn</th>
+                        <th>Hạn Trả</th>
+                        <th>Ngày Trả</th>
+                        <th>Trạng Thái</th>
+                    </tr>
+                </thead>
+                <tbody id="bangMuonTra">
+                    <tr><td colspan="6" style="text-align: center;">Đang tải dữ liệu...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/profile.js"></script>
+</body>
+</html>

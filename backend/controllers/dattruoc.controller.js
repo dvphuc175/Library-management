@@ -56,3 +56,14 @@ exports.getAllDatTruoc = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server khi lấy danh sách đặt trước.' });
     }
 };
+
+exports.layLichSuCaNhan = async (req, res) => {
+    try {
+        const nguoiDungId = req.user.id;
+        const lichSu = await DatTruocModel.getLichSuCaNhan(nguoiDungId);
+        res.status(200).json(lichSu);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi server khi lấy lịch sử đặt trước.' });
+    }
+};

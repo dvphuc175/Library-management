@@ -10,3 +10,6 @@ router.post('/', verifyToken, datTruocController.datTruocSach);
 router.put('/:id/trangthai', verifyToken, checkThuThuOrAdmin, datTruocController.capNhatDatTruoc);
 router.get('/', verifyToken, checkThuThuOrAdmin, datTruocController.getAllDatTruoc);
 module.exports = router;
+
+// Độc giả tự xem lịch sử đặt trước
+router.get('/lichsu', verifyToken, datTruocController.layLichSuCaNhan);
