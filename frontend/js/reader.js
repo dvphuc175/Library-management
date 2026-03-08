@@ -53,14 +53,18 @@ async function loadBooks() {
             const btnText = isAvailable ? 'Đặt giữ chỗ' : 'Đặt chờ sách';
             const btnColor = isAvailable ? '#007bff' : '#ffc107'; // Xanh blue hoặc Vàng
 
+            // Tạo thẻ HTML cho từng cuốn sách
             const bookCard = `
                 <div class="book-card">
-                    <img src="${imageUrl}" alt="${book.tenSach}">
-                    <h3>${book.tenSach}</h3>
+                    <!-- Bọc ảnh và tên sách vào link để click -->
+                    <a href="chitiet.html?id=${book.maDauSach}" style="text-decoration: none; color: inherit;">
+                        <img src="${imageUrl}" alt="${book.tenSach}">
+                        <h3 style="color: #007bff;">${book.tenSach}</h3>
+                    </a>
                     <p><strong>Tác giả:</strong> ${book.tacGia || 'Đang cập nhật'}</p>
                     <p><strong>Thể loại:</strong> ${book.theLoai || 'Đang cập nhật'}</p>
-                    <p><strong>Số lượng trên kệ:</strong> ${book.tongSoLuong}</p>
-                    <button class="btn-action" style="background-color: ${btnColor}; color: ${isAvailable ? 'white' : 'black'};" 
+                    <p><strong>Số lượng trên kệ:</strong> <span style="color: ${isAvailable ? 'green' : 'red'}; font-weight: bold;">${book.tongSoLuong}</span></p>
+                    <button class="btn-action" style="background-color: ${btnColor}; color: ${isAvailable ? 'white' : 'black'}; margin-top: 10px;" 
                             onclick="handleAction('${book.maDauSach}')">
                         ${btnText}
                     </button>

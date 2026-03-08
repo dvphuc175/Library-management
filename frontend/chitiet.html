@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Sách - Thư Viện</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f9; }
+        header { background-color: #007bff; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 24px; cursor: pointer; }
+        .container { padding: 40px 20px; max-width: 1000px; margin: auto; }
+        
+        .book-detail-wrapper { display: flex; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); gap: 40px; }
+        .book-cover { flex: 0 0 300px; }
+        .book-cover img { width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        
+        .book-info { flex: 1; }
+        .book-info h2 { margin-top: 0; font-size: 28px; color: #333; }
+        .info-row { margin-bottom: 10px; font-size: 16px; color: #555; }
+        .info-row strong { color: #222; width: 120px; display: inline-block; }
+        
+        .description { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; line-height: 1.6; color: #444; }
+        
+        .action-box { margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; text-align: center; }
+        .btn-reserve { background-color: #007bff; color: white; border: none; padding: 12px 30px; font-size: 18px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-reserve:hover { background-color: #0056b3; }
+        
+        .back-link { display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 onclick="window.location.href='index.html'">Thư Viện Của Bạn</h1>
+    </header>
+
+    <div class="container">
+        <a href="index.html" class="back-link">← Quay lại trang chủ</a>
+        
+        <div class="book-detail-wrapper" id="detailContainer">
+            <!-- Nội dung sẽ được load bằng JS -->
+            <p>Đang tải thông tin sách...</p>
+        </div>
+    </div>
+
+    <script src="js/chitiet.js"></script>
+</body>
+</html>
