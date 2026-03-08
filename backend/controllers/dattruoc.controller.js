@@ -35,10 +35,24 @@ exports.capNhatDatTruoc = async (req, res) => {
         await DatTruocModel.capNhatTrangThai(datTruocId, trangThai);
         res.status(200).json({ message: 'Cập nhật trạng thái đặt trước thành công.' });
     } catch (error) {
+        if (error.message.includes('Không thể Báo có sách')) {
+            return res.status(400).json({ message: error.message });
+        }
+        
         if (error.message.includes('Không tìm thấy')) {
             return res.status(404).json({ message: error.message });
         }
         console.error(error);
         res.status(500).json({ message: 'Lỗi server khi cập nhật đặt trước.' });
+    }
+};
+
+exports.getAllDatTruoc = async (req, res) => {
+    try {
+        const danhSach = await DatTruocModel.getAll();
+        res.status(200).json(danhSach);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Lỗi server khi lấy danh sách đặt trước.' });
     }
 };

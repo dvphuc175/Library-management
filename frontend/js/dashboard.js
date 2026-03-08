@@ -124,6 +124,10 @@ document.querySelectorAll('.nav-link').forEach(link => {
         if (targetId === 'section-sach') {
             loadDanhSachSachAdmin();
         }
+        // THÊM ĐOẠN NÀY: Nếu sang tab Đặt trước thì gọi API lấy danh sách
+        if (targetId === 'section-dattruoc') {
+            loadDanhSachDatTruoc();
+        }
     });
 });
 
@@ -372,6 +376,98 @@ async function xoaBanSao(maVach) {
         } else {
             const err = await response.json();
             alert('Lỗi: ' + (err.message || err.error));
+        }
+    } catch (error) {
+        alert('Lỗi kết nối máy chủ!');
+    }
+}
+
+// ==========================================
+// QUẢN LÝ ĐẶT TRƯỚC
+// ==========================================
+async function loadDanhSachDatTruoc() {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch('http://localhost:3000/api/dattruoc', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        const tbody = document.getElementById('bangDatTruoc');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Không có yêu cầu đặt trước nào.</td></tr>';
+            return;
+        }
+
+        data.forEach(item => {
+            const ngayDat = new Date(item.ngayDat).toLocaleString('vi-VN');
+            
+            let badgeClass = 'bg-cosan'; 
+            if (item.trangThai === 'CHO') badgeClass = 'bg-dangmuon'; 
+            if (item.trangThai === 'HUY') badgeClass = 'bg-huhong'; 
+
+            // Logic ẩn/hiện nút thần thánh nằm ở đây:
+            let hanhDongHtml = '';
+            if (item.trangThai === 'CHO') {
+                if (item.soLuongCoSan > 0) {
+                    // Nếu kho có sách -> Hiện nút màu xanh
+                    hanhDongHtml = `
+                        <button class="btn-small" style="background-color: #28a745;" onclick="capNhatDatTruoc(${item.id}, 'DA_CO_SACH')">✔ Báo Có Sách</button>
+                        <button class="btn-small" style="background-color: #dc3545;" onclick="capNhatDatTruoc(${item.id}, 'HUY')">✖ Hủy</button>
+                    `;
+                } else {
+                    // Nếu kho trống (0 cuốn) -> Ẩn nút xanh, chỉ hiện nút Hủy và dòng chữ cảnh báo
+                    hanhDongHtml = `
+                        <span style="color: #ff9800; font-size: 12px; margin-right: 10px; font-style: italic;">Đang chờ sách về...</span>
+                        <button class="btn-small" style="background-color: #dc3545;" onclick="capNhatDatTruoc(${item.id}, 'HUY')">✖ Hủy</button>
+                    `;
+                }
+            } else {
+                hanhDongHtml = `<span style="color: #888; font-size: 13px;">Đã đóng</span>`;
+            }
+
+            // Định dạng hiển thị số lượng (Xanh nếu có, Đỏ nếu không)
+            const mauSoLuong = item.soLuongCoSan > 0 ? 'green' : 'red';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>#${item.id}</td>
+                <td><strong>${item.hoTen}</strong></td>
+                <td>${item.tenSach}</td>
+                <td style="color: ${mauSoLuong}; font-weight: bold; text-align: center;">${item.soLuongCoSan}</td>
+                <td>${ngayDat}</td>
+                <td><span class="badge ${badgeClass}">${item.trangThai}</span></td>
+                <td>${hanhDongHtml}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error('Lỗi tải danh sách đặt trước:', error);
+    }
+}
+
+async function capNhatDatTruoc(id, trangThaiMoi) {
+    if (!confirm(`Xác nhận đổi trạng thái mã #${id} thành ${trangThaiMoi}?`)) return;
+
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`http://localhost:3000/api/dattruoc/${id}/trangthai`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ trangThai: trangThaiMoi })
+        });
+
+        if (response.ok) {
+            alert('Cập nhật trạng thái thành công!');
+            loadDanhSachDatTruoc(); // Load lại bảng
+        } else {
+            const err = await response.json();
+            alert('Lỗi: ' + err.message);
         }
     } catch (error) {
         alert('Lỗi kết nối máy chủ!');

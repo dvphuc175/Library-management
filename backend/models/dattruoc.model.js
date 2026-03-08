@@ -23,16 +23,49 @@ class DatTruocModel {
         return result.insertId;
     }
 
-    // 2. DÀNH CHO THỦ THƯ: Cập nhật trạng thái (khi có sách hoặc khi độc giả hủy)
+
+// 2. DÀNH CHO THỦ THƯ: Cập nhật trạng thái (Bắt buộc check kho nếu báo DA_CO_SACH)
     static async capNhatTrangThai(datTruocId, trangThaiMoi) {
-        // trangThaiMoi: 'DA_CO_SACH' hoặc 'HUY'
-        const sql = 'UPDATE DatTruoc SET trangThai = ? WHERE id = ?';
-        const [result] = await db.query(sql, [trangThaiMoi, datTruocId]);
-        
-        if (result.affectedRows === 0) {
+        // Lấy thông tin phiếu đặt trước để biết Độc giả đang đặt cuốn (maDauSach) nào
+        const [thongTinDat] = await db.query('SELECT maDauSach FROM DatTruoc WHERE id = ?', [datTruocId]);
+        if (thongTinDat.length === 0) {
             throw new Error('Không tìm thấy phiếu đặt trước này.');
         }
+        
+        const maDauSach = thongTinDat[0].maDauSach;
+
+        // BẢO VỆ LOGIC: Nếu thủ thư muốn chuyển thành DA_CO_SACH, phải đếm xem có Bản sao nào rảnh không
+        if (trangThaiMoi === 'DA_CO_SACH') {
+            const [banSaoRanh] = await db.query(
+                'SELECT COUNT(*) as soLuong FROM BanSaoSach WHERE maDauSach = ? AND trangThai = "CO_SAN"', 
+                [maDauSach]
+            );
+            
+            if (banSaoRanh[0].soLuong === 0) {
+                // Quăng lỗi ra thẳng mặt nếu kho không có cuốn nào
+                throw new Error('Không thể Báo có sách! Hiện tại không có bản sao nào đang rảnh trong kho.');
+            }
+        }
+
+        // Nếu qua được ải trên (hoặc là bấm HỦY) thì cho phép cập nhật
+        const sql = 'UPDATE DatTruoc SET trangThai = ? WHERE id = ?';
+        await db.query(sql, [trangThaiMoi, datTruocId]);
+        
         return true;
+    }
+    // DÀNH CHO THỦ THƯ: Lấy danh sách tất cả yêu cầu đặt trước
+    // DÀNH CHO THỦ THƯ: Lấy danh sách tất cả yêu cầu đặt trước (Kèm số lượng sách rảnh)
+    static async getAll() {
+        const sql = `
+            SELECT dt.id, dt.ngayDat, dt.trangThai, nd.hoTen, ds.tenSach,
+                   (SELECT COUNT(*) FROM BanSaoSach bs WHERE bs.maDauSach = dt.maDauSach AND bs.trangThai = 'CO_SAN') AS soLuongCoSan
+            FROM DatTruoc dt
+            JOIN NguoiDung nd ON dt.nguoiDungId = nd.id
+            JOIN DauSach ds ON dt.maDauSach = ds.maDauSach
+            ORDER BY dt.ngayDat DESC
+        `;
+        const [rows] = await db.query(sql);
+        return rows;
     }
 }
 
